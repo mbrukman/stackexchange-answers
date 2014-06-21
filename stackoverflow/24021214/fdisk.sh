@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash -u
 #
 # Copyright 2014 Google Inc.
 #
@@ -28,8 +28,51 @@
 #
 ################################################################################
 
+# The ratio between the entire disk and the first partition in blocks or space
+# that needs to be exceeded for us to repartition the disk or resize the
+# filesystem.
+#
+# We are giving it some slack in case not all blocks or sectors are in use, and
+# we would like to avoid both an infinite loop with reboot, or running resize2fs
+# on every reboot.
+declare -r THRESHOLD="1.1"
+
+# Args:
+#   $1: numerator
+#   $2: denominator
+#   $3: threshold (optional; defaults to $THRESHOLD)
+#
+# Returns:
+#   1 if (numerator / denominator > threshold)
+#   0 otherwise
+function ratio_over_threshold() {
+  local numer="${1}"
+  local denom="${2}"
+  local threshold="${3:-${THRESHOLD}}"
+
+  if `which python > /dev/null 2>&1`; then
+    python -c "print(1 if (1. * ${numer} / ${denom} > ${threshold}) else 0)"
+  elif `which bc > /dev/null 2>&1`; then
+    echo "${numer} / ${denom} > ${threshold}" | bc -l
+  else
+    echo "Neither python nor bc were found; calculation infeasible." >&2
+    exit 1
+  fi
+}
+
+# Repartitions the disk or resizes the file system, depending on the current
+# state of the partition table.
 function main() {
-  # Commands
+  # This gets us the size, in blocks, of the whole disk and the first partition.
+  declare -i -r DEV_SDA="$(fdisk -s /dev/sda)"
+  declare -i -r DEV_SDA1="$(fdisk -s /dev/sda1)"
+
+  # If the ratio between the entire disk and the first partition is over
+  # ${THRESHOLD}, then we haven't yet repartitioned the disk. Technically, the
+  # ratio between the two of them will be exactly 50 in the case where we're
+  # requesting a 500GB disk because OS images on GCE are 10GB.
+  #
+  # fdisk(1) commands
   # c: disable DOS compatibility mode (must do for CentOS, according to docs)
   # u: change display mode to sectors
   # d: delete partition (automatically selects the first one)
@@ -38,16 +81,7 @@ function main() {
   # 1: partition number
   # <2 blank lines>: accept the defaults for start and end sectors
   # w: write partition table
-
-  # This gets us the size, in blocks, of the whole disk and the first partition.
-  declare -i -r DEV_SDA="$(fdisk -s /dev/sda)"
-  declare -i -r DEV_SDA1="$(fdisk -s /dev/sda1)"
-
-  # If the ratio between the entire disk and the first partition is over 10, then
-  # we haven't yet repartitioned the disk. Technically, the ratio between the two
-  # of them will be exactly 50 in the case where we're requesting a 500GB disk
-  # because OS images on GCE are 10GB.
-  if [ $(echo "${DEV_SDA} / ${DEV_SDA1}" | bc) -gt 10 ]; then
+  if [ $(ratio_over_threshold "${DEV_SDA}" "${DEV_SDA1}") -eq 1 ]; then
     cat <<EOF | fdisk /dev/sda
 c
 u
@@ -85,9 +119,9 @@ EOF
     # /dev/sda1            516060600   1041548 488811080   1% /
     # [...]
     #
-    # so we can still use the ratio-of-10 metric to see if we need to fix this.
+    # so we can still use the ratio to see if we need to fix this.
     declare -i -r DEV_SDA1_DF="$(df -B 1K | grep /dev/sda1 | awk '{ print $2 }')"
-    if [ $(echo "${DEV_SDA} / ${DEV_SDA1_DF}" | bc) -gt 10 ]; then
+    if [ $(ratio_over_threshold "${DEV_SDA}" "${DEV_SDA1_DF}") -eq 1 ]; then
       resize2fs /dev/sda1
     fi
   fi
