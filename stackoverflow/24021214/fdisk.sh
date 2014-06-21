@@ -28,26 +28,27 @@
 #
 ################################################################################
 
-# Commands
-# c: disable DOS compatibility mode (must do for CentOS, according to docs)
-# u: change display mode to sectors
-# d: delete partition (automatically selects the first one)
-# n: new partition
-# p: primary
-# 1: partition number
-# <2 blank lines>: accept the defaults for start and end sectors
-# w: write partition table
+function main() {
+  # Commands
+  # c: disable DOS compatibility mode (must do for CentOS, according to docs)
+  # u: change display mode to sectors
+  # d: delete partition (automatically selects the first one)
+  # n: new partition
+  # p: primary
+  # 1: partition number
+  # <2 blank lines>: accept the defaults for start and end sectors
+  # w: write partition table
 
-# This gets us the size, in blocks, of the whole disk and the first partition.
-declare -i -r DEV_SDA="$(fdisk -s /dev/sda)"
-declare -i -r DEV_SDA1="$(fdisk -s /dev/sda1)"
+  # This gets us the size, in blocks, of the whole disk and the first partition.
+  declare -i -r DEV_SDA="$(fdisk -s /dev/sda)"
+  declare -i -r DEV_SDA1="$(fdisk -s /dev/sda1)"
 
-# If the ratio between the entire disk and the first partition is over 10, then
-# we haven't yet repartitioned the disk. Technically, the ratio between the two
-# of them will be exactly 50 in the case where we're requesting a 500GB disk
-# because OS images on GCE are 10GB.
-if [ $(echo "${DEV_SDA} / ${DEV_SDA1}" | bc) -gt 10 ]; then
-  cat <<EOF | fdisk /dev/sda
+  # If the ratio between the entire disk and the first partition is over 10, then
+  # we haven't yet repartitioned the disk. Technically, the ratio between the two
+  # of them will be exactly 50 in the case where we're requesting a 500GB disk
+  # because OS images on GCE are 10GB.
+  if [ $(echo "${DEV_SDA} / ${DEV_SDA1}" | bc) -gt 10 ]; then
+    cat <<EOF | fdisk /dev/sda
 c
 u
 d
@@ -58,35 +59,45 @@ p
 
 w
 EOF
-  # We've made the changes to the partition table, but they just haven't taken
-  # effect, so we need to reboot. On the next reboot, the if statement will be
-  # false and we'll fall into the else case which will reread the partition
-  # table and automatically resize the partition for us.
-  reboot
-else
-  # After the repartitioning and reboot, we have the following:
-  #
-  #   fdisk -s /dev/sda  => 524288000
-  #   fdisk -s /dev/sda1 => 524286976
-  #
-  # so the ratio no longer tells us anything. However, now we can examine the
-  # actual usable space on disk to see the difference:
-  #
-  # Before:
-  # % df -B 1K | grep /dev/sda1
-  # Filesystem           1K-blocks      Used Available Use% Mounted on
-  # /dev/sda1             10319160   1020760   8774216  11% /
-  # [...]
-  #
-  # After:
-  # % df -B 1K | grep /dev/sda1
-  # Filesystem           1K-blocks      Used Available Use% Mounted on
-  # /dev/sda1            516060600   1041548 488811080   1% /
-  # [...]
-  #
-  # so we can still use the ratio-of-10 metric to see if we need to fix this.
-  declare -i -r DEV_SDA1_DF="$(df -B 1K | grep /dev/sda1 | awk '{ print $2 }')"
-  if [ $(echo "${DEV_SDA} / ${DEV_SDA1_DF}" | bc) -gt 10 ]; then
-    resize2fs /dev/sda1
+    # We've made the changes to the partition table, but they just haven't taken
+    # effect, so we need to reboot. On the next reboot, the if statement will be
+    # false and we'll fall into the else case which will reread the partition
+    # table and automatically resize the partition for us.
+    reboot
+  else
+    # After the repartitioning and reboot, we have the following:
+    #
+    #   fdisk -s /dev/sda  => 524288000
+    #   fdisk -s /dev/sda1 => 524286976
+    #
+    # so the ratio no longer tells us anything. However, now we can examine the
+    # actual usable space on disk to see the difference:
+    #
+    # Before:
+    # % df -B 1K | grep /dev/sda1
+    # Filesystem           1K-blocks      Used Available Use% Mounted on
+    # /dev/sda1             10319160   1020760   8774216  11% /
+    # [...]
+    #
+    # After:
+    # % df -B 1K | grep /dev/sda1
+    # Filesystem           1K-blocks      Used Available Use% Mounted on
+    # /dev/sda1            516060600   1041548 488811080   1% /
+    # [...]
+    #
+    # so we can still use the ratio-of-10 metric to see if we need to fix this.
+    declare -i -r DEV_SDA1_DF="$(df -B 1K | grep /dev/sda1 | awk '{ print $2 }')"
+    if [ $(echo "${DEV_SDA} / ${DEV_SDA1_DF}" | bc) -gt 10 ]; then
+      resize2fs /dev/sda1
+    fi
   fi
+}
+
+# Emulate Python's way of only executing the code if this file were invoked as
+# the main one:
+#
+# if __name__ == '__main__':
+#   ...
+if [[ "$(basename $0)" != "fdisk_test.sh" ]]; then
+  main
 fi
