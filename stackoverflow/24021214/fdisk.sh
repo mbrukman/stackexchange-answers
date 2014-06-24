@@ -64,8 +64,8 @@ function ratio_over_threshold() {
 # state of the partition table.
 function main() {
   # This gets us the size, in blocks, of the whole disk and the first partition.
-  declare -i -r DEV_SDA="$(fdisk -s /dev/sda)"
-  declare -i -r DEV_SDA1="$(fdisk -s /dev/sda1)"
+  local dev_sda="$(fdisk -s /dev/sda)"
+  local dev_sda1="$(fdisk -s /dev/sda1)"
 
   # If the ratio between the entire disk and the first partition is over
   # ${THRESHOLD}, then we haven't yet repartitioned the disk.
@@ -91,7 +91,7 @@ function main() {
   # 1: partition number
   # <2 blank lines>: accept the defaults for start and end sectors
   # w: write partition table
-  if [ $(ratio_over_threshold "${DEV_SDA}" "${DEV_SDA1}") -eq 1 ]; then
+  if [ $(ratio_over_threshold "${dev_sda}" "${dev_sda1}") -eq 1 ]; then
     cat <<EOF | fdisk -c -u /dev/sda
 d
 n
@@ -137,8 +137,8 @@ EOF
     # udev               10240     0     10240   0% /dev
     #
     # so we read the size of the root partition to work on both.
-    declare -i -r DEV_SDA1_DF="$(df -B 1K / | grep ' /$' | awk '{ print $2 }')"
-    if [ $(ratio_over_threshold "${DEV_SDA}" "${DEV_SDA1_DF}") -eq 1 ]; then
+    local dev_sda1_df="$(df -B 1K / | grep ' /$' | awk '{ print $2 }')"
+    if [ $(ratio_over_threshold "${dev_sda}" "${dev_sda1_df}") -eq 1 ]; then
       resize2fs /dev/sda1
     fi
   fi
