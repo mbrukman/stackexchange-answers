@@ -22,14 +22,25 @@
 
 source "$(dirname $0)/settings.sh" || exit 1
 
+# Returns a fully-qualified URL pointing to the VM image.
+#
+# Args:
+#   $1: project
+#   $2: VM image
+function vm_image_url() {
+  local project="${1}"
+  local image="${2}"
+  echo "https://www.googleapis.com/compute/v1/projects/${project}/global/images/${image}"
+}
+
 if [ -z "${IMAGE:-}" ]; then
   declare -r IMAGE_OS="${IMAGE_OS:-centos}"
   case "${IMAGE_OS}" in
     centos)
-      declare -r IMAGE="https://www.googleapis.com/compute/v1/projects/centos-cloud/global/images/centos-6-v20140606"
+      declare -r IMAGE="$(vm_image_url 'centos-cloud' 'centos-6-v20140606')"
       ;;
     debian)
-      declare -r IMAGE="https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/debian-7-wheezy-v20140606"
+      declare -r IMAGE="$(vm_image_url 'debian-cloud' 'debian-7-wheezy-v20140606')"
       ;;
     *)
       echo "Valid IMAGE_OS values: centos, debian." >&2
