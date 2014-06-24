@@ -3,6 +3,11 @@ stackexchange-answers
 
 Complete code for my answers posted on Stack Exchange.
 
+License
+-------
+
+Apache 2.0; see LICENSE.txt for details.
+
 Disclaimer
 ----------
 
