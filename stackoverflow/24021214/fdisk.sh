@@ -68,13 +68,23 @@ function main() {
   declare -i -r DEV_SDA1="$(fdisk -s /dev/sda1)"
 
   # If the ratio between the entire disk and the first partition is over
-  # ${THRESHOLD}, then we haven't yet repartitioned the disk. Technically, the
-  # ratio between the two of them will be exactly 50 in the case where we're
-  # requesting a 500GB disk because OS images on GCE are 10GB.
+  # ${THRESHOLD}, then we haven't yet repartitioned the disk.
   #
-  # fdisk(1) commands
-  # c: disable DOS compatibility mode (must do for CentOS, according to docs)
-  # u: change display mode to sectors
+  # Of interest is that fdisk(1) has opposite behavior on CentOS vs. Debian.
+  # While the 'c' and 'u' commands can be used to toggle DOS compatibility mode
+  # and cylinder (vs. sector) display, respectively, it turns out that fdisk(1)
+  # starts in opposite modes on CentOS (both enabled) vs. Debian (both
+  # disabled), so unconditionally using those commands has the opposite effect
+  # on those two distributions.
+  #
+  # However, using the -c and -u flags disables them (as we want) on both
+  # distributions, so we use them as flags instead of commands.
+  #
+  # fdisk(1) flags:
+  # -c: disable DOS compatibility mode
+  # -u: change display mode to sectors (from cylinders)
+  #
+  # fdisk(1) commands:
   # d: delete partition (automatically selects the first one)
   # n: new partition
   # p: primary
@@ -82,9 +92,7 @@ function main() {
   # <2 blank lines>: accept the defaults for start and end sectors
   # w: write partition table
   if [ $(ratio_over_threshold "${DEV_SDA}" "${DEV_SDA1}") -eq 1 ]; then
-    cat <<EOF | fdisk /dev/sda
-c
-u
+    cat <<EOF | fdisk -c -u /dev/sda
 d
 n
 p
@@ -107,20 +115,29 @@ EOF
     # so the ratio no longer tells us anything. However, now we can examine the
     # actual usable space on disk to see the difference:
     #
-    # Before:
-    # % df -B 1K | grep /dev/sda1
+    # Before (on CentOS):
+    # % df -B 1K /dev/sda1
     # Filesystem           1K-blocks      Used Available Use% Mounted on
     # /dev/sda1             10319160   1020760   8774216  11% /
-    # [...]
     #
-    # After:
-    # % df -B 1K | grep /dev/sda1
+    # After (on CentOS):
+    # % df -B 1K /dev/sda1
     # Filesystem           1K-blocks      Used Available Use% Mounted on
     # /dev/sda1            516060600   1041548 488811080   1% /
-    # [...]
     #
-    # so we can still use the ratio to see if we need to fix this.
-    declare -i -r DEV_SDA1_DF="$(df -B 1K | grep /dev/sda1 | awk '{ print $2 }')"
+    # On Debian, the device behind the root filesystem is not /dev/sda1 but a
+    # disk with random UUID, e.g.,
+    #
+    # % df -B 1K /
+    # Filesystem              1K-blocks   Used Available Use% Mounted on
+    # /dev/disk/by-uuid/{...}  10320184 680336   9115612   7% /
+    #
+    # % df -B 1K /dev/sda1
+    # Filesystem     1K-blocks  Used Available Use% Mounted on
+    # udev               10240     0     10240   0% /dev
+    #
+    # so we read the size of the root partition to work on both.
+    declare -i -r DEV_SDA1_DF="$(df -B 1K / | grep ' /$' | awk '{ print $2 }')"
     if [ $(ratio_over_threshold "${DEV_SDA}" "${DEV_SDA1_DF}") -eq 1 ]; then
       resize2fs /dev/sda1
     fi
