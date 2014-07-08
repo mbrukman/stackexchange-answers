@@ -37,13 +37,25 @@ if [ -z "${IMAGE:-}" ]; then
   declare -r IMAGE_OS="${IMAGE_OS:-centos}"
   case "${IMAGE_OS}" in
     centos)
-      declare -r IMAGE="$(vm_image_url 'centos-cloud' 'centos-6-v20140606')"
+      declare -r IMAGE="$(vm_image_url 'centos-cloud' 'centos-6-v20140619')"
+      ;;
+    container-vm)
+      declare -r IMAGE="$(vm_image_url 'google-containers' 'container-vm-v20140624')"
       ;;
     debian)
-      declare -r IMAGE="$(vm_image_url 'debian-cloud' 'debian-7-wheezy-v20140606')"
+      declare -r IMAGE="$(vm_image_url 'debian-cloud' 'debian-7-wheezy-v20140619')"
+      ;;
+    debian-backports)
+      declare -r IMAGE="$(vm_image_url 'debian-cloud' 'backports-debian-7-wheezy-v20140619')"
+      ;;
+    rhel)
+      declare -r IMAGE="$(vm_image_url 'rhel-cloud' 'rhel-6-v20140619')"
+      ;;
+    suse)
+      declare -r IMAGE="$(vm_image_url 'suse-cloud' 'sles-11-sp3-v20140609')"
       ;;
     *)
-      echo "Valid IMAGE_OS values: centos, debian." >&2
+      echo "Valid IMAGE_OS values: centos, container-vm, debian, debian-backports, rhel, suse." >&2
       exit 1
       ;;
   esac
