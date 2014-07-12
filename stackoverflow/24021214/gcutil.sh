@@ -33,6 +33,12 @@ function vm_image_url() {
   echo "https://www.googleapis.com/compute/v1/projects/${project}/global/images/${image}"
 }
 
+# The startup script to run at boot to automatically repartition or grow the
+# root partition to fill the available disk space.
+declare -r STARTUP_SCRIPT_GROWROOT="growroot.sh"
+declare -r STARTUP_SCRIPT_FDISK="fdisk.sh"
+STARTUP_SCRIPT="${STARTUP_SCRIPT:-${STARTUP_SCRIPT_FDISK}}"
+
 if [ -z "${IMAGE:-}" ]; then
   declare -r IMAGE_OS="${IMAGE_OS:-centos}"
   case "${IMAGE_OS}" in
@@ -41,9 +47,15 @@ if [ -z "${IMAGE:-}" ]; then
       ;;
     container-vm)
       declare -r IMAGE="$(vm_image_url 'google-containers' 'container-vm-v20140624')"
+      # The fdisk.sh script does not work well on the container-vm image and
+      # locks it up after reboot, so we have to use the growroot approach
+      # instead.
+      STARTUP_SCRIPT="${STARTUP_SCRIPT_GROWROOT}"
       ;;
     debian)
       declare -r IMAGE="$(vm_image_url 'debian-cloud' 'debian-7-wheezy-v20140619')"
+      # Note: Debian does not have the growroot package (only available in backports).
+      STARTUP_SCRIPT="${STARTUP_SCRIPT_FDISK}"
       ;;
     debian-backports)
       declare -r IMAGE="$(vm_image_url 'debian-cloud' 'backports-debian-7-wheezy-v20140619')"
@@ -66,7 +78,7 @@ fi
 # Args:
 #   $1: instance disk size in GB
 function instance_name() {
-  echo "fdisk-${1}"
+  echo "instance-${1}"
 }
 
 # Creates several instances given their disk sizes. Instance names will be
@@ -75,6 +87,7 @@ function instance_name() {
 # Args:
 #   $*: instance disk sizes in GB
 function create_instances() {
+  local pids=""
   for gb in $*; do
     local instance="$(instance_name ${gb})"
     gcutil \
@@ -86,12 +99,14 @@ function create_instances() {
       --machine_type="${MACHINE_TYPE}" \
       --network="default" \
       --external_ip_address="ephemeral" \
-      --metadata_from_file="startup-script:fdisk.sh" \
+      --metadata_from_file="startup-script:${STARTUP_SCRIPT}" \
       --service_account_scopes="https://www.googleapis.com/auth/userinfo.email,https://www.googleapis.com/auth/compute,https://www.googleapis.com/auth/devstorage.full_control" \
       --image="${IMAGE}" \
       --persistent_boot_disk="true" \
       --auto_delete_boot_disk="true" &
+    pids="${pids} $!"
   done
+  wait ${pids}
 }
 
 # Deletes instances corresponding to the given disk sizes. Instance names will
@@ -101,6 +116,7 @@ function create_instances() {
 # Args:
 #   $*: instance disk sizes in GB
 function delete_instances() {
+  local pids=""
   for gb in $*; do
     local instance="$(instance_name ${gb})"
     gcutil \
@@ -111,7 +127,9 @@ function delete_instances() {
       --delete_boot_pd \
       --zone="${ZONE}" \
       "${instance}" &
+    pids="${pids} $!"
   done
+  wait ${pids}
 }
 
 # Runs `df` on each instance corresponding to the given disk sizes and shows the
