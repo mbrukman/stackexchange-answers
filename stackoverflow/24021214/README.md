@@ -16,6 +16,10 @@ sure to have it installed prior to using these scripts.
 Usage
 -----
 
+Before trying out any of the examples below, be sure to modify `settings.sh` to
+point to a project that you have access to, and which is enabled to create new
+GCE VM instances.
+
 To bring up several instances on GCE, run:
 
 ```bash
