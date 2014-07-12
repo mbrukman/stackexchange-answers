@@ -78,7 +78,6 @@ function main() {
       echo "Using apt-get (Debian, etc.) ..."
       apt-get -qq -y update
       apt-get -qq -y install cloud-init cloud-initramfs-growroot
-      echo "Done"
     elif which yum > /dev/null 2>&1 ; then
       # RHEL and CentOS.
       echo "Using rpm/yum (RHEL, CentOS, etc.); WARNING: work-in-progress"
