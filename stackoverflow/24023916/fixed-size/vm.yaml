@@ -1,0 +1,90 @@
+description: "Fixed-resize VM image template"
+
+variables:
+  project: ""
+  username: "{{env `USER`}}"
+  zone: ""
+  instance_name: vm-image-builder
+  machine_type: n1-standard-1
+  disk_size_gb: 50
+
+  # Input options.
+  source_image: centos-6-v20140619
+
+  # Google Cloud Storage options.
+  #
+  # Note: you *must* modify this; these names must be globally-unique across GCS
+  # so you must own a bucket by this name or have write access to it.
+  bucket_name: centos6-packer-images
+
+  # This name does not need to be globally unique, because it is stored under
+  # the storage bucket.
+  image_name: centos6-vm-image
+  image_description: Fixed-size VM image
+
+# These are common settings that are considered to be constants and are not
+# intended to be modifiable by user via variables, so they're in a separate
+# section.
+#
+# However, Packer considers any unknown field or section names as validation
+# errors, so a YAML-to-JSON converter needs to remove this section prior to
+# handing over the resulting JSON config to Packer for validation or processing.
+common:
+  # Security settings.
+  client_secrets_file: &client_secrets_file
+    "../client_secret.json"
+  private_key_file: &private_key_file
+    "../private_key.pem"
+
+builders:
+  - name: vm-fdisk
+    type: googlecompute
+    # shutdown_command: "sudo -S shutdown -P now"
+
+    # Input settings.
+    source_image: "{{user `source_image`}}"
+
+    # Output settings (Google Cloud Storage).
+    bucket_name: "{{user `bucket_name`}}"
+    image_name: "{{user `image_name`}}"
+    image_description: "{{user `image_description`}}"
+    disk_size_gb: 50
+
+    # Security settings.
+    client_secrets_file: *client_secrets_file
+    private_key_file: *private_key_file
+
+    # GCP settings.
+    project_id: "{{user `project`}}"
+    zone: "{{user `zone`}}"
+    instance_name: "{{user `instance_name`}}-fdisk"
+    machine_type: "{{user `machine_type`}}"
+    disk_size_gb: "{{user `disk_size_gb`}}"
+    ssh_username: "{{user `username`}}"
+
+provisioners:
+  - type: shell
+    script: fdisk.sh
+    only: [vm-fdisk]
+    execute_command: "{{ .Vars }} sudo -E /bin/bash '{{ .Path }}'"
+
+  - type: shell
+    # http://www.packer.io/docs/provisioners/shell.html suggests adding 
+    # "sleep 60" after a reboot to make sure the ssh connection is closed.
+    inline: [
+      "reboot",
+      "sleep 60"
+    ]
+    only: [vm-fdisk]
+    execute_command: "{{ .Vars }} sudo -E /bin/bash '{{ .Path }}'"
+
+  - type: shell
+    script: resize2fs.sh
+    only: [vm-fdisk]
+    execute_command: "{{ .Vars }} sudo -E /bin/bash '{{ .Path }}'"
+    # See:
+    # https://groups.google.com/forum/#!topic/packer-tool/-9UhG99Mr5k
+    # https://github.com/mitchellh/packer/pull/737
+    pause_before: 120s
+    # See: https://github.com/mitchellh/packer/issues/260
+    start_retry_timeout: 5m

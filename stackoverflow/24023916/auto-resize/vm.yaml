@@ -1,0 +1,71 @@
+description: "Auto-resizing VM image template"
+
+variables:
+  project: ""
+  username: "{{env `USER`}}"
+  zone: ""
+  instance_name: vm-image-builder
+  machine_type: n1-standard-1
+
+  # Note: this field is not used in the config below but is added here for
+  # compatibility with the other vm.yaml config, so as to avoid
+  # an error from an undefined variable.
+  disk_size_gb: 50
+
+  # Input options.
+  source_image: container-vm-v20140619
+
+  # Google Cloud Storage options.
+  #
+  # Note: you *must* modify this; these names must be globally-unique across GCS
+  # so you must own a bucket by this name or have write access to it.
+  bucket_name: autoresize-packer-images
+
+  # This name does not need to be globally unique, because it is stored under
+  # the storage bucket.
+  image_name: autoresize-vm-image
+  image_description: Auto-resizing VM image
+
+# These are common settings that are considered to be constants and are not
+# intended to be modifiable by user via variables, so they're in a separate
+# section.
+#
+# However, Packer considers any unknown field or section names as validation
+# errors, so a YAML-to-JSON converter needs to remove this section prior to
+# handing over the resulting JSON config to Packer for validation or processing.
+common:
+  # Security settings.
+  client_secrets_file: &client_secrets_file
+    "../client_secret.json"
+  private_key_file: &private_key_file
+    "../private_key.pem"
+
+builders:
+  - name: vm-growroot
+    type: googlecompute
+    # shutdown_command: "sudo -S shutdown -P now"
+
+    # Input settings.
+    source_image: "{{user `source_image`}}"
+
+    # Output settings (Google Cloud Storage).
+    bucket_name: "{{user `bucket_name`}}"
+    image_name: "{{user `image_name`}}"
+    image_description: "{{user `image_description`}}"
+
+    # Security settings.
+    client_secrets_file: *client_secrets_file
+    private_key_file: *private_key_file
+
+    # GCP settings.
+    project_id: "{{user `project`}}"
+    zone: "{{user `zone`}}"
+    instance_name: "{{user `instance_name`}}-growroot"
+    machine_type: "{{user `machine_type`}}"
+    ssh_username: "{{user `username`}}"
+
+provisioners:
+  - type: shell
+    script: growroot.sh
+    only: [vm-growroot]
+    execute_command: "{{ .Vars }} sudo -E /bin/bash '{{ .Path }}'"
