@@ -24,19 +24,7 @@ PROJECT = enthusiastic-lemming-439
 ZONE = us-central1-a
 MACHINE_TYPE = n1-standard-1
 
-# Input settings.
-# Keep this list up to date with the output from:
-# % gcloud compute images list --project google-containers
-SOURCE.centos = centos-6-v20140718
-SOURCE.container-vm = container-vm-v20140826
-SOURCE.coreos-alpha = coreos-alpha-423-0-0-v20140828
-SOURCE.coreos-beta = coreos-beta-410-0-0-v20140825
-SOURCE.coreos-stable = coreos-stable-367-1-0-v20140724
-SOURCE.debian = debian-7-wheezy-v20140814
-SOURCE.debian-backports = backports-debian-7-wheezy-v20140814
-SOURCE.opensuse = opensuse-13-1-v20140711
-SOURCE.rhel = rhel-6-v20140718
-SOURCE.suse = sles-11-sp3-v20140826
+include $(LEVEL)/images.mk
 
 IMAGE = debian-backports
 SOURCE_IMAGE = $(SOURCE.$(IMAGE))
