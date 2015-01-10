@@ -26,7 +26,7 @@ MACHINE_TYPE = n1-standard-1
 
 include $(LEVEL)/images.mk
 
-IMAGE = debian-backports
+IMAGE = debian-7-backports
 SOURCE_IMAGE = $(SOURCE.$(IMAGE))
 
 # Runtime settings.
