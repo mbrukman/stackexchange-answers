@@ -1,12 +1,5 @@
 1. Install [Packer](http://packer.io) as described in the
-   [README.md](https://github.com/mitchellh/packer/blob/master/README.md);
-   however, you will need a very recent check out of Packer which includes the
-   following fixes:
-
-   * [PR 1350](https://github.com/mitchellh/packer/pull/1350):
-     adding support for all official, well-known VM image projects
-   * [PR 1351](https://github.com/mitchellh/packer/pull/1351):
-     re-enable building GCE images (fixing `gsutil update` command)
+   [README.md](https://github.com/mitchellh/packer/blob/master/README.md).
 
 2. In `settings.mk`, specify:
 
