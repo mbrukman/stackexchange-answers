@@ -25,7 +25,7 @@
 echo "Installing growroot ..."
 if which apt-get > /dev/null 2>&1 ; then
   # Debian and derivatives.
-  echo "Using apt-get (Debian, etc.) ..."
+  echo "Using apt-get (Debian, Ubuntu, etc.) ..."
   apt-get -qq -y update
   apt-get -qq -y install cloud-init cloud-initramfs-growroot
 elif which yum > /dev/null 2>&1 ; then
