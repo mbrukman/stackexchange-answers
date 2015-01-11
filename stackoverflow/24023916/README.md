@@ -38,17 +38,17 @@ Instructions
 5. Build the Packer image:
 
    ```bash
-   $ cd auto-resize
+   cd auto-resize
    ```
 
    and then:
 
    ```bash
-   $ make IMAGE=container-vm build
+   make IMAGE=container-vm build
 
    # OR
 
-   $ make IMAGE=debian-7-backports build
+   make IMAGE=debian-7-backports build
    ```
 
 6. Run the VM with the newly-created image:
@@ -61,27 +61,27 @@ Instructions
    bytes:
 
    ```bash
-   $ make vm-df
+   make vm-df
    ```
 
    If you want to log in to the instance for manual inspection, run:
 
    ```bash
-   $ make vm-ssh-inline      # in the same terminal
+   make vm-ssh-inline      # in the same terminal
 
    # OR
 
-   $ make vm-ssh-new-window  # in a new gnome-terminal window
+   make vm-ssh-new-window  # in a new gnome-terminal window
    ```
 
 8. Once you're done, delete the VM:
 
    ```bash
-   $ make vm-delete
+   make vm-delete
    ```
 
 9. To list all available make targets, run:
 
    ```bash
-   $ make
+   make
    ```
