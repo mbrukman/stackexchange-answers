@@ -25,7 +25,11 @@
 echo "Installing growroot ..."
 if which apt-get > /dev/null 2>&1 ; then
   # Debian and derivatives.
-  echo "Using apt-get (Debian, Ubuntu, etc.) ..."
+  if grep -i Ubuntu /etc/issue > /dev/null 2>&1 ; then
+    echo "This appears to be Ubuntu; this script should be necessary." >&2
+    echo "Please try booting Ubuntu with a large disk and check df(1) output." >&2
+  fi
+  echo "Using apt-get (Debian, etc.) ..."
   apt-get -qq -y update
   apt-get -qq -y install cloud-init cloud-initramfs-growroot
 elif which yum > /dev/null 2>&1 ; then
