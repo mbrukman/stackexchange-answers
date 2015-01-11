@@ -11,7 +11,7 @@
 
 3. Authentication is easiest if you're already running from a VM on Google
    Compute Engine with the proper read-write scopes, as described in the
-   [Packerdocumentation](http://www.packer.io/docs/builders/googlecompute.html),
+   [Packer documentation](http://www.packer.io/docs/builders/googlecompute.html),
    as there's nothing else you need to do here.
 
 4. Choose whether you want an auto-resizing image or a fixed-size image.
