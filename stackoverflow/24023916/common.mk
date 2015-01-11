@@ -79,7 +79,6 @@ clean-local:
 clean-cloud:
 	$(VERB) echo "Removing image: '$(IMAGE_NAME)' ..."
 	$(VERB) gcutil --project="$(PROJECT)" deleteimage -f "$(IMAGE_NAME)"
-	$(VERB) gsutil rm -f "gs://$(GS_BUCKET)/$(IMAGE_NAME).tar.gz"
 	$(VERB) echo "Done."
 
 vm-create:
