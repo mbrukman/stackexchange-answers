@@ -1,4 +1,4 @@
-1. Install [Packer](http://packer.io) as described the
+1. Install [Packer](http://packer.io) as described in the
    [README.md](https://github.com/mitchellh/packer/blob/master/README.md);
    however, you will need a very recent check out of Packer which includes the
    following fixes:
