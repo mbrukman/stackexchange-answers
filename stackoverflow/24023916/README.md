@@ -34,7 +34,7 @@
 
    and then:
 
-   ```
+   ```bash
    $ make IMAGE=container-vm build
 
    # OR
