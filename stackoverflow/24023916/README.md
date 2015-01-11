@@ -9,13 +9,10 @@
 
    These variables can also be overridden on the `make` command line.
 
-3. You will need to add the following files to this directory:
-
-   * `client_secret.json`
-   * `private_key.p12`
-   * `private_key.pem`
-
-   as described in the [Packer documentation](http://www.packer.io/docs/builders/googlecompute.html).
+3. Authentication is easiest if you're already running from a VM on Google
+   Compute Engine with the proper read-write scopes, as described in the
+   [Packerdocumentation](http://www.packer.io/docs/builders/googlecompute.html),
+   as there's nothing else you need to do here.
 
 4. Choose whether you want an auto-resizing image or a fixed-size image.
    Auto-resizing is supported by those distributions which have `cloud-init` and
