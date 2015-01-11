@@ -39,7 +39,7 @@
 
    # OR
 
-   $ make IMAGE=debian-backports build
+   $ make IMAGE=debian-7-backports build
    ```
 
 6. Run the VM with the newly-created image:
