@@ -59,7 +59,7 @@ case "${COMMAND}" in
     gcloud compute ssh "${INSTANCE}" \
       --project "${PROJECT}" \
       --zone "${ZONE}" \
-      --command "df / | grep ' /$' | awk '{ print \$2 }'"
+      --command df | grep ' /$' | awk '{ print $2 }'
     ;;
 
   *)
