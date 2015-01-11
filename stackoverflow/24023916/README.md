@@ -1,3 +1,13 @@
+Important note
+--------------
+
+**Ubuntu** images on Google Compute Engine already include the `cloud-init`
+package which automatically resizes the first partition to the maximum
+available size of the disk, so this process isn't necessary for those images.
+
+Instructions
+------------
+
 1. Install [Packer](http://packer.io) as described in the
    [README.md](https://github.com/mitchellh/packer/blob/master/README.md).
 
@@ -20,7 +30,6 @@
 
    * backports-debian-7-wheezy (short name: `debian-7-backports`)
    * container-vm (short name: `container-vm`)
-   * ubuntu (short names depend on version)
 
    For these distributions, run the Packer build from the `auto-resize` directory.
 
