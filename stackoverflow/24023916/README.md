@@ -18,8 +18,9 @@
    Auto-resizing is supported by those distributions which have `cloud-init` and
    `cloud-initramfs-growroot` packages, which are recent versions of:
 
-   * backports-debian-7-wheezy (short name: `debian-backports`)
+   * backports-debian-7-wheezy (short name: `debian-7-backports`)
    * container-vm (short name: `container-vm`)
+   * ubuntu (short names depend on version)
 
    For these distributions, run the Packer build from the `auto-resize` directory.
 
