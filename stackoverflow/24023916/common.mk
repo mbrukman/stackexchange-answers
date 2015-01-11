@@ -78,7 +78,7 @@ clean-local:
 
 clean-cloud:
 	$(VERB) echo "Removing image: '$(IMAGE_NAME)' ..."
-	$(VERB) gcutil --project="$(PROJECT)" deleteimage -f "$(IMAGE_NAME)"
+	$(VERB) gcloud compute images delete --project="$(PROJECT)" -q "$(IMAGE_NAME)"
 	$(VERB) echo "Done."
 
 vm-create:
