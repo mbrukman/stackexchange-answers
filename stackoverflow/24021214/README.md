@@ -41,12 +41,3 @@ make INSTANCE_SIZES="10 15 30" delete
 
 You can override the `IMAGE_OS` variable to choose either `centos` or `debian`
 images to be used for the VMs.
-
-Testing
--------
-
-Run the unit tests via:
-
-```bash
-make test
-```

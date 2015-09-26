@@ -22,10 +22,3 @@ df:
 
 ssh:
 	$(VERB) ./gcloud.sh ssh $(INSTANCE_SIZES)
-
-test: fdisk.sh fdisk_test.sh
-	$(VERB) for test in $(SH_TESTS); do \
-	  echo "Testing $$test ..."; \
-	  bash $$test; \
-	done
-	$(VERB) echo "Done."
