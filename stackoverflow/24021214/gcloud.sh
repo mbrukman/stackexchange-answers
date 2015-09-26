@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash -u
 #
 # Copyright 2014 Google Inc.
 #
@@ -39,46 +39,12 @@ declare -r STARTUP_SCRIPT_GROWROOT="growroot.sh"
 declare -r STARTUP_SCRIPT_FDISK="fdisk.sh"
 STARTUP_SCRIPT="${STARTUP_SCRIPT:-${STARTUP_SCRIPT_FDISK}}"
 
-if [ -z "${IMAGE:-}" ]; then
-  declare -r IMAGE_OS="${IMAGE_OS:-centos}"
-  case "${IMAGE_OS}" in
-    centos)
-      declare -r IMAGE="$(vm_image_url 'centos-cloud' 'centos-6-v20140619')"
-      ;;
-    container-vm)
-      declare -r IMAGE="$(vm_image_url 'google-containers' 'container-vm-v20140624')"
-      # The fdisk.sh script does not work well on the container-vm image and
-      # locks it up after reboot, so we have to use the growroot approach
-      # instead.
-      STARTUP_SCRIPT="${STARTUP_SCRIPT_GROWROOT}"
-      ;;
-    debian)
-      declare -r IMAGE="$(vm_image_url 'debian-cloud' 'debian-7-wheezy-v20140619')"
-      # Note: Debian does not have the growroot package (only available in backports).
-      STARTUP_SCRIPT="${STARTUP_SCRIPT_FDISK}"
-      ;;
-    debian-backports)
-      declare -r IMAGE="$(vm_image_url 'debian-cloud' 'backports-debian-7-wheezy-v20140619')"
-      ;;
-    rhel)
-      declare -r IMAGE="$(vm_image_url 'rhel-cloud' 'rhel-6-v20140619')"
-      ;;
-    suse)
-      declare -r IMAGE="$(vm_image_url 'suse-cloud' 'sles-11-sp3-v20140609')"
-      ;;
-    *)
-      echo "Valid IMAGE_OS values: centos, container-vm, debian, debian-backports, rhel, suse." >&2
-      exit 1
-      ;;
-  esac
-fi
-
 # Creates an instance name given an instance size.
 #
 # Args:
 #   $1: instance disk size in GB
 function instance_name() {
-  echo "instance-${1}"
+  echo "${IMAGE}-${1}gb"
 }
 
 # Creates several instances given their disk sizes. Instance names will be
@@ -90,20 +56,14 @@ function create_instances() {
   local pids=""
   for gb in $*; do
     local instance="$(instance_name ${gb})"
-    gcutil \
-      --service_version="v1" \
-      --project="${PROJECT}" \
-      addinstance "${instance}" \
-      --zone="${ZONE}" \
-      --boot_disk_size_gb=${gb} \
-      --machine_type="${MACHINE_TYPE}" \
-      --network="default" \
-      --external_ip_address="ephemeral" \
-      --metadata_from_file="startup-script:${STARTUP_SCRIPT}" \
-      --service_account_scopes="https://www.googleapis.com/auth/userinfo.email,https://www.googleapis.com/auth/compute,https://www.googleapis.com/auth/devstorage.full_control" \
-      --image="${IMAGE}" \
-      --persistent_boot_disk="true" \
-      --auto_delete_boot_disk="true" &
+    gcloud \
+      --project "${PROJECT}" \
+      compute instances create "${instance}" \
+      --zone "${ZONE}" \
+      --image "${IMAGE}" \
+      --machine-type "${MACHINE_TYPE}" \
+      --boot-disk-size "${gb}" \
+      --metadata-from-file "startup-script=${STARTUP_SCRIPT}" &
     pids="${pids} $!"
   done
   wait ${pids}
@@ -119,12 +79,11 @@ function delete_instances() {
   local pids=""
   for gb in $*; do
     local instance="$(instance_name ${gb})"
-    gcutil \
-      --service_version="v1" \
+    gcloud \
       --project="${PROJECT}" \
-      deleteinstance \
-      --force \
-      --delete_boot_pd \
+      compute instances delete \
+      --quiet \
+      --delete-disks=all \
       --zone="${ZONE}" \
       "${instance}" &
     pids="${pids} $!"
@@ -141,13 +100,11 @@ function disk_free() {
   for gb in $*; do
     local instance="$(instance_name ${gb})"
     echo "Running df on [${instance}] ..."
-    gcutil \
-      --service_version="v1" \
-      --project="${PROJECT}" \
-      --log_level=ERROR \
-      ssh \
-      --zone="${ZONE}" \
-      --ssh_arg=-q \
+    gcloud \
+      --project "${PROJECT}" \
+      compute ssh \
+      --zone "${ZONE}" \
+      --ssh-flag="-q" \
       "${instance}" \
       df / | grep ' /$' | awk '{ print $2 }'
   done
@@ -166,13 +123,11 @@ function ssh() {
   for gb in $*; do
     local instance="$(instance_name ${gb})"
     echo "Running ssh on [${instance}] ..."
-    gcutil \
-      --service_version="v1" \
-      --project="${PROJECT}" \
-      --log_level=ERROR \
-      ssh \
-      --zone="${ZONE}" \
-      --ssh_arg=-q \
+    gcloud \
+      --project "${PROJECT}" \
+      compute ssh \
+      --zone "${ZONE}" \
+      --ssh-flag="-q" \
       "${instance}"
   done
 }

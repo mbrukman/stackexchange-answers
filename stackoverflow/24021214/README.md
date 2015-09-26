@@ -8,8 +8,8 @@ The script `fdisk.sh` automates repartitioning, reboot, and file system resizing
 to enable using arbitrarily-sized disks with VM images that by default expand to
 only 10GB of space when instantiated.
 
-The script `gcutil.sh` automates VM instance creation, running commands across
-all instances, and bringing them all down. It uses the `gcutil` command which is
+The script `gcloud.sh` automates VM instance creation, running commands across
+all instances, and bringing them all down. It uses the `gcloud` command which is
 part of the [Google Cloud SDK](https://developers.google.com/cloud/sdk/) so be
 sure to have it installed prior to using these scripts.
 

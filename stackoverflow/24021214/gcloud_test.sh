@@ -16,37 +16,42 @@
 #
 ################################################################################
 #
-# A simple way to test the functionality in the gcutil.sh script by bringing up
+# A simple way to test the functionality in the gcloud.sh script by bringing up
 # and automatically repartitioning an instance with each of the supported OS
 # images.
 #
 ################################################################################
 
-declare -i -r RHEL_SIZE=17
-declare -i -r CENTOS_SIZE=19
-declare -i -r DEBIAN_SIZE=23
-declare -i -r DEBIAN_BACKPORTS_SIZE=24
-declare -i -r SUSE_SIZE=25
-
 declare -r COMMAND="$1"
 
-declare -A OS_TO_SIZE=(
-  [centos]=15
-  [container-vm]=17
-  [debian]=19
-  [debian-backports]=20
-  [rhel]=23
-  [suse]=25
-)
+declare -r IMAGES="
+    centos-6
+    centos-7
+    container-vm
+    coreos
+    debian-7
+    debian-7-backports
+    debian-8
+    opensuse-13
+    rhel-6
+    rhel-7
+    sles-11
+    sles-12
+    ubuntu-12-04
+    ubuntu-14-04
+    ubuntu-14-10
+    ubuntu-15-04
+"
 
 function run_action() {
   local action="$1"
 
   rm -f "*.${action}.log"
   local pids=""
-  for os in "${!OS_TO_SIZE[@]}"; do
-    make INSTANCE_SIZES="${OS_TO_SIZE[$os]}" IMAGE_OS="$os" "${action}" \
-      > "${os}.${action}.log" 2>&1 &
+  for image in ${IMAGES} ; do
+		echo "[${action}] VM instance from image: ${image} ..."
+    make INSTANCE_SIZES="19" IMAGE="${image}" "${action}" \
+      > "${image}.${action}.log" 2>&1 &
     pids="${pids} $!"
   done
   wait ${pids}
