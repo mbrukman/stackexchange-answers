@@ -22,3 +22,6 @@ df:
 
 ssh:
 	$(VERB) ./gcloud.sh ssh $(INSTANCE_SIZES)
+
+clean:
+	$(VERB) rm -f *.log
