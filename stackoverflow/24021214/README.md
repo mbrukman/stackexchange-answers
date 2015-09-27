@@ -10,7 +10,7 @@ only 10GB of space when instantiated.
 
 The script `gcloud.sh` automates VM instance creation, running commands across
 all instances, and bringing them all down. It uses the `gcloud` command which is
-part of the [Google Cloud SDK](https://developers.google.com/cloud/sdk/) so be
+part of the [Google Cloud SDK](https://cloud.google.com/sdk/) so be
 sure to have it installed prior to using these scripts.
 
 Usage
@@ -39,5 +39,9 @@ and to bring them all down, run:
 make INSTANCE_SIZES="10 15 30" delete
 ```
 
-You can override the `IMAGE_OS` variable to choose either `centos` or `debian`
-images to be used for the VMs.
+You can override the `IMAGE` variable to choose other images to be used for the
+VMs.
+
+You can also use the [`gcloud_test.sh`](gcloud_test.sh) script to bring up a
+number of VMs, each with a different OS image, check the disk size, and delete
+them. See the script for usage details.
