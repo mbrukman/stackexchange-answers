@@ -13,12 +13,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
-#
-# Converts a YAML file to a JSON format, to be consumed by Packer.
-#
-################################################################################
+
+"""Converts a YAML file to a JSON format to be consumed by Packer."""
+
 
 import json
 import yaml

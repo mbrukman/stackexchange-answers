@@ -13,10 +13,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-################################################################################
-#
-# Update VM OS images and short names.
+
+"""Update VM OS images and short names."""
 
 import argparse
 import glob
