@@ -15,10 +15,8 @@
 # limitations under the License.
 #
 ################################################################################
-#
+
 # A simple script to create, access (via SSH), and delete GCE instances.
-#
-################################################################################
 
 declare -r INSTANCE="${INSTANCE:-vm-resize-test}"
 

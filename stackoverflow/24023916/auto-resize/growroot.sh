@@ -15,12 +15,10 @@
 # limitations under the License.
 #
 ################################################################################
-#
+
 # Install the package "cloud-init" and the "growroot" tool it includes. Upon
 # reboot, it will automatically repartition the root volume to fill all
 # available space.
-#
-################################################################################
 
 echo "Installing growroot ..."
 if which apt-get > /dev/null 2>&1 ; then

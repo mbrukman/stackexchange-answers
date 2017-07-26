@@ -13,11 +13,9 @@
 # limitations under the License.
 #
 ################################################################################
-#
+
 # Project settings for a Google Cloud Platform project.
 # This file should be included into a Makefile.
-#
-################################################################################
 
 # Google Cloud Project settings.
 PROJECT = enthusiastic-lemming-439

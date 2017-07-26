@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 ################################################################################
-#
+
 # We're restoring a 10GB OS image onto a larger disk. That space will not be
 # visible until we repartition the disk, which then also requires us to reboot
 # the instance.
@@ -25,7 +25,7 @@
 #
 # See detailed docs here:
 # https://developers.google.com/compute/docs/disks#repartitionrootpd
-#
+
 ################################################################################
 
 # Of interest is that fdisk(1) has opposite behavior on CentOS vs. Debian.
