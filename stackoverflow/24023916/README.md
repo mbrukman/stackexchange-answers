@@ -1,12 +1,16 @@
-Important note
---------------
+# Overview
+
+The code in this directory supports [this answer][answer] to [the
+question][question] about creating an OS image on Google Compute Engine that
+will automatically resize on boot beyond the default 10GB size.
+
+## Important note
 
 **Ubuntu** images on Google Compute Engine already include the `cloud-init`
 package which automatically resizes the first partition to the maximum
 available size of the disk, so this process isn't necessary for those images.
 
-Instructions
-------------
+## Instructions
 
 1. Install [Packer](http://packer.io) as described in the
    [README.md](https://github.com/mitchellh/packer/blob/master/README.md).
@@ -85,3 +89,6 @@ Instructions
    ```bash
    make
    ```
+
+[answer]: https://stackoverflow.com/a/25611858/3618671
+[question]: https://stackoverflow.com/q/24023916/3618671
