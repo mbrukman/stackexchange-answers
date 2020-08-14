@@ -1,8 +1,7 @@
-Overview
-========
+# Overview
 
-The code in this directory is intended to answer
-[this question](https://stackoverflow.com/q/24021214).
+The code in this directory supports [this answer][answer] to [the
+question][question] about repartitioning boot disks on Google Compute Engine.
 
 The script `fdisk.sh` automates repartitioning, reboot, and file system resizing
 to enable using arbitrarily-sized disks with VM images that by default expand to
@@ -13,8 +12,7 @@ all instances, and bringing them all down. It uses the `gcloud` command which is
 part of the [Google Cloud SDK](https://cloud.google.com/sdk/) so be
 sure to have it installed prior to using these scripts.
 
-Usage
------
+## Usage
 
 Before trying out any of the examples below, be sure to modify `settings.sh` to
 point to a project that you have access to, and which is enabled to create new
@@ -45,3 +43,6 @@ VMs.
 You can also use the [`gcloud_test.sh`](gcloud_test.sh) script to bring up a
 number of VMs, each with a different OS image, check the disk size, and delete
 them. See the script for usage details.
+
+[answer]: https://stackoverflow.com/a/24102667/3618671
+[question]: https://stackoverflow.com/q/24021214/3618671
