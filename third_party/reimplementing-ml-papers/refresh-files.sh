@@ -18,4 +18,8 @@ for file in LICENSE Makefile nbconvert_test.sh nbfmt.py nbfmt_update.sh run_nbfm
   echo "Downloading the latest version of: ${file} ..."
   curl -sO "https://raw.githubusercontent.com/mbrukman/reimplementing-ml-papers/main/${file}"
 done
+
+# Ensure all the scripts are executable.
+chmod u+x *.py *.sh
+
 echo "Done."
