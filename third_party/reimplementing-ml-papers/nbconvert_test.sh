@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash -u
 #
 # Copyright 2022 Google LLC
 #
@@ -14,8 +14,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-for file in LICENSE Makefile nbconvert_test.sh nbfmt.py nbfmt_update.sh run_nbfmt_test.sh ; do
-  echo "Downloading the latest version of: ${file} ..."
-  curl -sO "https://raw.githubusercontent.com/mbrukman/reimplementing-ml-papers/main/${file}"
+declare -i status=0
+
+function test_file() {
+  local file="$1"
+  local html="${file/%ipynb/html}"
+  local err="${file}.err"
+
+  jupyter nbconvert --to html "${file}" 2> "${err}"
+  if [ $? -eq 0 ]; then
+    echo "Converting ${file} ... ok"
+  else
+    status=1
+    echo "::group::Converting ${file} ... failed"
+    cat "${err}"
+    echo "::endgroup::"
+  fi
+  rm -f "${err}" "${html}"
+}
+
+for file in $(find . -name \*\.ipynb | sort); do
+  test_file "${file}"
 done
-echo "Done."
+
+echo
+if [ ${status} -eq 0 ]; then
+  echo "PASSED"
+else
+  echo "FAILED"
+fi
+
+exit ${status}
